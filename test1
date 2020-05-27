@@ -36,16 +36,10 @@ MsgBox ("in get col")
     Dim newColName() As Variant
     Dim default_val() As Variant
     Dim i As Integer
+    Dim isValExist As Boolean
     last_row = Cells(Rows.Count, 1).End(xlUp).Row
     MsgBox (last_row)
-    'ReDim orgColName(5) As Variant
-    'ReDim newColName(5) As Variant
-    'ReDim default_val(5) As Variant
-   ' For i = 1 To 5
-        'orgColName(i) = ws.Cells(i + 6, "D")
-       ' MsgBox (ws.Cells(i + 6, "D").SpecialCells(xlCellTypeVisible))
-    'Next i
-    
+  
     Set filter_rng = ws.Range("C6:E" & last_row)
 
     'collect data
@@ -62,21 +56,14 @@ MsgBox ("in get col")
             orgColName(arrCnt) = Sheets("Configuration").Range("D" & i)
             'MsgBox (orgColName(arrCnt))
             newColName(arrCnt) = Sheets("Configuration").Range("C" & i)
-            'MsgBox (newColName(arrCnt))
+            'MsgBox ("newcolumn name: " + newColName(arrCnt))
             default_val(arrCnt) = Sheets("Configuration").Range("E" & i)
             'MsgBox (default_val(arrCnt))
             arrCnt = arrCnt + 1
         End If
     
     Next i
-    
-    'For j = LBound(newColName) To UBound(newColName)
-     '   MsgBox (j)
-      '  MsgBox (orgColName(j))
-       ' MsgBox (newColName(j))
-        'MsgBox (default_val(j))
-    
-    'Next j
+
     
     ws_temp.Activate
     Range("A1").Select
@@ -84,21 +71,13 @@ MsgBox ("in get col")
     Set rngHeader = Range(Cells(1, 1), Cells(1, lastCol))
     colNum = 2
     For Each cell In rngHeader
-        
-        'MsgBox (cell.Value)
         For j = LBound(newColName) To UBound(newColName)
             If orgColName(j) = cell.Value Then
-                MsgBox ("inside if")
                 isValExist = True
                 cell.Value = newColName(j)
                 Exit For
             End If
         Next j
-        
-        'If isValExist = False Then
-          '  MsgBox ("inside delete if")
-         '   ActiveSheet.Columns(colNum).EntireColumn.Delete
-        'End If
         colNum = colNum + 1
         
     Next
@@ -112,17 +91,21 @@ MsgBox ("in get col")
     Next k
     
     final_lastCol = ws_temp.UsedRange.Columns.Count
+    ReDim del_colNum(final_lastCol) As Variant
     
-    For p = 2 To final_lastCol
-        tempColName = ws_temp.Cells(1, p)
+    colNum = 0
+    
+    For p = final_lastCol To 1 Step -1
+       tempColName = ws_temp.Cells(1, p)
         isValExist = False
-        For q = LBound(newColName) To UBound(newColName)
+        For q = LBound(newColName) + 1 To UBound(newColName) - 1
+            
             If newColName(q) = tempColName Then
                 isValExist = True
                 Exit For
             End If
         Next q
-        
+    
         If isValExist = False Then
             ActiveSheet.Columns(p).EntireColumn.Delete
         End If
@@ -157,6 +140,7 @@ Sub importCSV()
 
     On Error Resume Next
     ThisWorkbook.Sheets("temp_sheet").Delete
+    MsgBox ("temp sheet deleted")
     With wb
         .Sheets.Add(After:=.Sheets(.Sheets.Count)).Name = "temp_sheet"
     End With
